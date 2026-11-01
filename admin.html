@@ -10,12 +10,16 @@
 <body class="admin-body">
 <header class="admin-header"><a class="admin-brand" href="index.html"><img src="assets/logo-creatix.png" alt=""><span>CREATIX <i>STUDIO</i></span></a><div><span class="admin-indicator"></span> ESPACE ADMINISTRATEUR</div><a href="index.html" class="admin-back">Voir le site ↗</a></header>
 <main class="admin-main">
-  <div class="admin-intro"><div class="eyebrow">GESTION DU PORTFOLIO</div><h1>Votre studio,<br><span class="gradient-text">vos projets.</span></h1><p>Modifiez les informations affichées sur le portfolio. Les changements sont enregistrés dans ce navigateur.</p></div>
-  <div class="admin-warning"><strong>À savoir :</strong> cette première interface fonctionne en local avec le stockage du navigateur. Elle n'est pas protégée par un compte et les modifications ne sont pas synchronisées entre appareils ou visiteurs. Pour une vraie administration en ligne, il faudra connecter une base de données et une authentification.</div>
-  <section class="admin-toolbar"><div><h2>Projets</h2><p id="project-count">4 projets</p></div><button class="admin-button primary" id="add-project">＋ Ajouter un projet</button></section>
-  <div id="project-list" class="admin-list"></div>
-  <div class="admin-actions"><button class="admin-button" id="reset-projects">Restaurer les valeurs initiales</button><button class="admin-button primary" id="save-all">Enregistrer les modifications</button></div>
-  <p class="admin-feedback" id="feedback" role="status"></p>
+  <div class="admin-intro"><div class="eyebrow">GESTION DU PORTFOLIO</div><h1>Votre studio,<br><span class="gradient-text">vos projets.</span></h1><p>Connectez-vous pour gérer les projets publiés sur Creatix Studio.</p></div>
+  <section id="login-panel" class="admin-login"><h2>Connexion administrateur</h2><p>Connectez-vous avec le compte autorisé dans Supabase.</p><form id="login-form"><label for="admin-email">Adresse e-mail</label><input id="admin-email" name="email" type="email" autocomplete="username" required><label for="admin-password">Mot de passe</label><input id="admin-password" name="password" type="password" autocomplete="current-password" required><button class="admin-button primary" type="submit">Se connecter</button></form><p class="admin-feedback" id="login-feedback" role="status"></p></section>
+  <section id="admin-workspace" hidden>
+    <div class="admin-session"><span id="admin-session-email"></span><button class="admin-button" id="logout-button" type="button">Se déconnecter</button></div>
+    <div class="admin-warning"><strong>Administration en ligne :</strong> les modifications sont enregistrées dans Supabase et deviennent visibles par tous les visiteurs. Les autorisations sont également vérifiées par la base de données.</div>
+    <section class="admin-toolbar"><div><h2>Projets</h2><p id="project-count">Chargement…</p></div><button class="admin-button primary" id="add-project" type="button">＋ Ajouter un projet</button></section>
+    <div id="project-list" class="admin-list"></div>
+    <div class="admin-actions"><button class="admin-button primary" id="save-all" type="button">Enregistrer les modifications</button></div>
+    <p class="admin-feedback" id="feedback" role="status"></p>
+  </section>
 </main>
-<script src="admin.js"></script>
+<script src="supabase-config.js"></script><script type="module" src="admin.js"></script>
 </body></html>
