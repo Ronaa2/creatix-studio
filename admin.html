@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#080910"><title>Administration — Creatix Studio</title><link rel="icon" type="image/png" sizes="128x128" href="assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="admin.css">
+</head>
+<body class="admin-body">
+<header class="admin-header"><a class="admin-brand" href="index.html"><img src="assets/logo-creatix.png" alt=""><span>CREATIX <i>STUDIO</i></span></a><div><span class="admin-indicator"></span> ESPACE ADMINISTRATEUR</div><a href="index.html" class="admin-back">Voir le site ↗</a></header>
+<main class="admin-main">
+  <div class="admin-intro"><div class="eyebrow">GESTION DU PORTFOLIO</div><h1>Votre studio,<br><span class="gradient-text">vos projets.</span></h1><p>Modifiez les informations affichées sur le portfolio. Les changements sont enregistrés dans ce navigateur.</p></div>
+  <div class="admin-warning"><strong>À savoir :</strong> cette première interface fonctionne en local avec le stockage du navigateur. Elle n'est pas protégée par un compte et les modifications ne sont pas synchronisées entre appareils ou visiteurs. Pour une vraie administration en ligne, il faudra connecter une base de données et une authentification.</div>
+  <section class="admin-toolbar"><div><h2>Projets</h2><p id="project-count">4 projets</p></div><button class="admin-button primary" id="add-project">＋ Ajouter un projet</button></section>
+  <div id="project-list" class="admin-list"></div>
+  <div class="admin-actions"><button class="admin-button" id="reset-projects">Restaurer les valeurs initiales</button><button class="admin-button primary" id="save-all">Enregistrer les modifications</button></div>
+  <p class="admin-feedback" id="feedback" role="status"></p>
+</main>
+<script src="admin.js"></script>
+</body></html>
