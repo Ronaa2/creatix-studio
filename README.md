@@ -29,3 +29,9 @@
 ## Notes
 - Le formulaire de contact conserve le comportement `mailto:` de la v5 : il ouvre le logiciel de messagerie du visiteur, il ne stocke pas les messages dans Supabase.
 - Les chemins `assets/projects/*.png` sont conservés. Ajoute tes captures de projets dans `assets/projects/` si tu veux remplacer les visuels CSS de démonstration.
+
+## Images et médias (v7)
+
+Après le SQL initial `supabase-setup.sql`, exécuter une seule fois `supabase-media-setup.sql` dans Supabase SQL Editor. Ce script crée le bucket public `portfolio-media`, la table `site_settings`, ajoute `screenshots` aux projets et applique les politiques RLS/Storage. Les fichiers sont stockés dans Supabase Storage et leurs URL publiques sont enregistrées dans les tables. Les visiteurs peuvent lire les images ; seul l'UID administrateur configuré peut téléverser, remplacer ou supprimer des objets.
+
+Limite d'envoi : 10 Mo par image, formats JPEG, PNG et WebP.
