@@ -1,33 +1,196 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-const cfg=window.CREATIX_SUPABASE;
-const supabase=createClient(cfg.url,cfg.publishableKey);
-const ADMIN_ID=cfg.adminUserId, BUCKET='portfolio-media';
-const loginPanel=document.querySelector('#login-panel'),workspace=document.querySelector('#admin-workspace');
-const loginFeedback=document.querySelector('#login-feedback'),feedback=document.querySelector('#feedback'),identityFeedback=document.querySelector('#identity-feedback');
-let projects=[],settings={profile_image:'',banner_image:''};
-const pendingScreenshots=new Map();
-function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-function setMessage(el,message,isError=false){el.textContent=message;el.classList.toggle('error',isError);}
-function showWorkspace(user){loginPanel.hidden=true;workspace.hidden=false;document.querySelector('#admin-session-email').textContent=user.email||'Administrateur';}
-function showLogin(){workspace.hidden=true;loginPanel.hidden=false;}
-async function checkSession(){const {data:{session}}=await supabase.auth.getSession();if(session?.user?.id===ADMIN_ID){showWorkspace(session.user);await Promise.all([loadProjects(),loadSettings()]);}else{if(session)await supabase.auth.signOut();showLogin();}}
-document.querySelector('#login-form').addEventListener('submit',async e=>{e.preventDefault();const form=e.currentTarget;setMessage(loginFeedback,'Connexion en cours…');const {data,error}=await supabase.auth.signInWithPassword({email:form.elements.email.value.trim(),password:form.elements.password.value});if(error){setMessage(loginFeedback,'Connexion impossible : '+error.message,true);return;}if(data.user.id!==ADMIN_ID){await supabase.auth.signOut();setMessage(loginFeedback,'Ce compte ne possède pas les droits administrateur.',true);return;}form.reset();setMessage(loginFeedback,'');showWorkspace(data.user);await Promise.all([loadProjects(),loadSettings()]);});
-document.querySelector('#logout-button').addEventListener('click',async()=>{await supabase.auth.signOut();projects=[];showLogin();setMessage(loginFeedback,'Vous êtes déconnecté.');});
-supabase.auth.onAuthStateChange((_event,session)=>{if(!session)showLogin();});
-async function loadProjects(){setMessage(feedback,'Chargement des projets…');const {data,error}=await supabase.from('projects').select('*').order('sort_order',{ascending:true});if(error){setMessage(feedback,'Erreur de chargement : '+error.message,true);return;}projects=data||[];render();setMessage(feedback,`${projects.length} projet(s) chargé(s) depuis Supabase.`);}
-async function loadSettings(){const {data,error}=await supabase.from('site_settings').select('*').eq('id','main').maybeSingle();if(error){setMessage(identityFeedback,'Erreur de chargement des images : '+error.message,true);return;}settings=data||{profile_image:'',banner_image:''};document.querySelector('#profile-preview').src=settings.profile_image||'assets/logo-creatix.png';const banner=document.querySelector('#banner-preview');banner.src=settings.banner_image||'';banner.hidden=!settings.banner_image;}
-function render(){const root=document.querySelector('#project-list');root.innerHTML='';document.querySelector('#project-count').textContent=`${projects.length} projet${projects.length>1?'s':''}`;if(!projects.length){root.innerHTML='<div class="empty-state">Aucun projet. Ajoutez votre première réalisation.</div>';return;}projects.forEach((p,i)=>{const shots=Array.isArray(p.screenshots)&&p.screenshots.length?p.screenshots:(p.image?[p.image]:[]);const el=document.createElement('article');el.className='admin-project';el.dataset.index=i;el.innerHTML=`<div class="admin-project-head"><strong>${esc(p.name||'Nouveau projet')}</strong><span class="admin-id">${esc(p.id)}</span></div><div class="admin-fields"><div class="admin-field"><label>Nom du projet</label><input data-key="name" value="${esc(p.name)}"></div><div class="admin-field"><label>Catégorie / type</label><input data-key="type" value="${esc(p.type)}"></div><div class="admin-field full"><label>Description courte (sur la carte)</label><textarea data-key="description">${esc(p.description)}</textarea></div><div class="admin-field full"><label>Détails du projet (dans la fenêtre au clic)</label><textarea data-key="details">${esc(p.details||'')}</textarea></div><div class="admin-field"><label>Statut</label><select data-key="status">${['Bientôt fini','En développement','Terminé','En pause'].map(s=>`<option ${p.status===s?'selected':''}>${s}</option>`).join('')}</select></div><div class="admin-field"><label>Ordre d'affichage</label><input data-key="sort_order" type="number" value="${Number(p.sort_order)||0}"></div><div class="admin-field full"><label>Captures du projet (PNG, JPG ou WebP — 10 Mo maximum par image)</label><input data-screenshots type="file" accept="image/png,image/jpeg,image/webp" multiple><div class="screenshot-previews">${shots.map((url,j)=>`<div class="screenshot-thumb"><img src="${esc(url)}" alt="Capture ${j+1}"><button type="button" data-remove-shot="${j}" aria-label="Retirer cette capture">×</button></div>`).join('')}</div><small class="admin-hint">${shots.length} capture(s) enregistrée(s). Les nouvelles images seront envoyées lors de l'enregistrement.</small></div><div class="admin-field full"><label class="admin-check"><input type="checkbox" data-key="visible" ${p.visible?'checked':''}> Afficher ce projet sur le portfolio</label></div></div><div class="admin-project-actions"><button class="admin-button danger" data-action="delete" type="button">Supprimer le projet</button></div>`;root.appendChild(el);});}
-function collect(){document.querySelectorAll('.admin-project').forEach(card=>{const p=projects[Number(card.dataset.index)];if(!p)return;card.querySelectorAll('[data-key]').forEach(input=>{p[input.dataset.key]=input.type==='checkbox'?input.checked:input.dataset.key==='sort_order'?Number(input.value)||0:input.value;});});}
-function safeId(){return 'projet-'+crypto.randomUUID().slice(0,8);}
-function ext(file){return ({'image/jpeg':'jpg','image/png':'png','image/webp':'webp'})[file.type]||'img';}
-async function uploadImage(file,path){if(!file||!['image/jpeg','image/png','image/webp'].includes(file.type))throw new Error('Format non accepté. Utilise PNG, JPG ou WebP.');if(file.size>10*1024*1024)throw new Error('Chaque image doit faire 10 Mo maximum.');const fullPath=`${path}/${crypto.randomUUID()}.${ext(file)}`;const {error}=await supabase.storage.from(BUCKET).upload(fullPath,file,{cacheControl:'3600',upsert:false,contentType:file.type});if(error)throw error;return supabase.storage.from(BUCKET).getPublicUrl(fullPath).data.publicUrl;}
-document.querySelector('#project-list').addEventListener('change',e=>{if(!e.target.matches('[data-screenshots]'))return;const card=e.target.closest('.admin-project'),p=projects[Number(card.dataset.index)];if(!p)return;pendingScreenshots.set(p.id,[...(pendingScreenshots.get(p.id)||[]),...Array.from(e.target.files||[])]);const hint=card.querySelector('.admin-hint');hint.textContent=`${(p.screenshots||[]).length+(p.image?1:0)} capture(s) enregistrée(s) + ${(pendingScreenshots.get(p.id)||[]).length} nouvelle(s) à envoyer.`;});
-document.querySelector('#project-list').addEventListener('click',async e=>{const remove=e.target.closest('[data-remove-shot]');if(remove){const card=remove.closest('.admin-project'),p=projects[Number(card.dataset.index)],idx=Number(remove.dataset.removeShot);const arr=Array.isArray(p.screenshots)?p.screenshots:(p.image?[p.image]:[]);arr.splice(idx,1);p.screenshots=arr;p.image=arr[0]||'';render();return;}const b=e.target.closest('[data-action="delete"]');if(!b)return;const card=b.closest('.admin-project'),p=projects[Number(card.dataset.index)];if(!p||!confirm(`Supprimer « ${p.name} » du portfolio ?`))return;const {error}=await supabase.from('projects').delete().eq('id',p.id);if(error){setMessage(feedback,'Suppression impossible : '+error.message,true);return;}pendingScreenshots.delete(p.id);await loadProjects();setMessage(feedback,'Projet supprimé.');});
-document.querySelector('#add-project').addEventListener('click',()=>{collect();projects.push({id:safeId(),name:'Nouveau projet',type:'PROJET DIGITAL',description:'Présentez ce projet en quelques mots.',details:'Ajoutez ici la présentation détaillée de ce projet.',status:'En développement',visible:true,image:'',screenshots:[],sort_order:projects.length+1});render();document.querySelector('#project-list').lastElementChild.scrollIntoView({behavior:'smooth',block:'center'});});
-document.querySelector('#save-all').addEventListener('click',async()=>{collect();setMessage(feedback,'Envoi des captures et enregistrement…');try{for(const p of projects){const files=pendingScreenshots.get(p.id)||[];if(files.length){p.screenshots=[...(Array.isArray(p.screenshots)?p.screenshots:(p.image?[p.image]:[]))];for(const file of files)p.screenshots.push(await uploadImage(file,`projects/${p.id}`));p.image=p.screenshots[0]||'';}}const rows=projects.map((p,i)=>({id:String(p.id),name:String(p.name||''),type:String(p.type||''),description:String(p.description||''),details:String(p.details||''),status:String(p.status||'En développement'),visible:Boolean(p.visible),image:String(p.image||''),screenshots:Array.isArray(p.screenshots)?p.screenshots:[],sort_order:Number(p.sort_order??i)}));const {error}=await supabase.from('projects').upsert(rows,{onConflict:'id'});if(error)throw error;pendingScreenshots.clear();await loadProjects();setMessage(feedback,'Projets et captures enregistrés et publiés !');}catch(error){setMessage(feedback,'Enregistrement impossible : '+error.message,true);}});
-async function saveStudioImage(kind){const input=document.querySelector(kind==='profile'?'#profile-upload':'#banner-upload'),file=input.files?.[0];if(!file){setMessage(identityFeedback,'Choisis une image avant de continuer.',true);return;}setMessage(identityFeedback,'Envoi de l’image vers Supabase Storage…');try{const url=await uploadImage(file,`studio/${kind}`);const next={...settings,[kind==='profile'?'profile_image':'banner_image']:url};const {error}=await supabase.from('site_settings').upsert({id:'main',...next},{onConflict:'id'});if(error)throw error;settings=next;await loadSettings();input.value='';setMessage(identityFeedback,'Image enregistrée. Elle est maintenant accessible aux visiteurs du site.');}catch(error){setMessage(identityFeedback,'Envoi impossible : '+error.message,true);}}
+
+const cfg = window.CREATIX_SUPABASE;
+const supabase = createClient(cfg.url, cfg.publishableKey);
+const ADMIN_ID = cfg.adminUserId;
+const BUCKET = 'portfolio-media';
+const loginPanel = document.querySelector('#login-panel');
+const workspace = document.querySelector('#admin-workspace');
+const loginFeedback = document.querySelector('#login-feedback');
+const feedback = document.querySelector('#feedback');
+const identityFeedback = document.querySelector('#identity-feedback');
+let projects = [];
+let settings = { profile_image: '', banner_image: '' };
+const pendingScreenshots = new Map();
+const pendingPreviews = new Map();
+let saving = false;
+
+const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+const setMessage = (el, message, isError=false) => { el.textContent = message; el.classList.toggle('error', isError); };
+const showWorkspace = user => { loginPanel.hidden = true; workspace.hidden = false; document.querySelector('#admin-session-email').textContent = user.email || 'Administrateur'; };
+const showLogin = () => { workspace.hidden = true; loginPanel.hidden = false; };
+function normalizeLinks(value) {
+  if (Array.isArray(value)) return value.filter(x => x && x.label && x.url).map(x => ({label:String(x.label).trim(),url:String(x.url).trim()}));
+  return [];
+}
+function linksToText(links) { return normalizeLinks(links).map(x => `${x.label} | ${x.url}`).join('\n'); }
+function parseLinks(text) {
+  return String(text || '').split('\n').map(line => line.trim()).filter(Boolean).map((line, i) => {
+    const parts = line.split('|');
+    if (parts.length < 2) throw new Error(`Lien ${i+1} : utilise le format « Nom | https://adresse.fr ».`);
+    const label = parts.shift().trim(), url = parts.join('|').trim();
+    let parsed;
+    try { parsed = new URL(url); } catch { throw new Error(`Lien ${i+1} : adresse URL invalide.`); }
+    if (!label || !['https:','http:'].includes(parsed.protocol)) throw new Error(`Lien ${i+1} : ajoute un nom et une adresse http(s).`);
+    return { label, url: parsed.href };
+  });
+}
+function showSession(user) { showWorkspace(user); }
+async function loadProjects() {
+  setMessage(feedback, 'Chargement des projets…');
+  const { data, error } = await supabase.from('projects').select('*').order('sort_order', { ascending:true });
+  if (error) { setMessage(feedback, `Erreur de chargement : ${error.message}`, true); return; }
+  projects = data || [];
+  render();
+  setMessage(feedback, `${projects.length} projet(s) chargé(s). Pense à enregistrer tes modifications.`);
+}
+async function loadSettings() {
+  const { data, error } = await supabase.from('site_settings').select('*').eq('id','main').maybeSingle();
+  if (error) { setMessage(identityFeedback, `Erreur de chargement : ${error.message}`, true); return; }
+  settings = data || { profile_image:'', banner_image:'' };
+  document.querySelector('#profile-preview').src = settings.profile_image || 'assets/logo-creatix.png';
+  const banner = document.querySelector('#banner-preview');
+  banner.src = settings.banner_image || '';
+  banner.hidden = !settings.banner_image;
+}
+function getShots(project) { return Array.isArray(project.screenshots) && project.screenshots.length ? project.screenshots : (project.image ? [project.image] : []); }
+function render() {
+  const root = document.querySelector('#project-list');
+  root.innerHTML = '';
+  document.querySelector('#project-count').textContent = `${projects.length} projet${projects.length > 1 ? 's' : ''}`;
+  if (!projects.length) { root.innerHTML = '<div class="empty-state">Aucun projet. Ajoute ta première réalisation.</div>'; return; }
+  projects.forEach((project, index) => {
+    const card = document.createElement('article');
+    card.className = 'admin-project'; card.dataset.index = index;
+    const shots = getShots(project);
+    const previews = (pendingPreviews.get(project.id) || []).map((url, i) => ({url, pending:true, index:i}));
+    const allShots = [...shots.map((url, i) => ({url, pending:false, index:i})), ...previews];
+    card.innerHTML = `
+      <div class="admin-project-head"><div><strong>${esc(project.name || 'Nouveau projet')}</strong><span class="admin-project-subtitle">${esc(project.status || 'En développement')}</span></div><span class="admin-id">${esc(project.id)}</span></div>
+      <details class="project-editor" open>
+        <summary>Informations du projet <span>Modifier le contenu, le statut et les liens</span></summary>
+        <div class="admin-fields">
+          <div class="admin-field"><label>Nom du projet</label><input data-key="name" maxlength="80" value="${esc(project.name)}"></div>
+          <div class="admin-field"><label>Catégorie / type</label><input data-key="type" maxlength="60" value="${esc(project.type)}"></div>
+          <div class="admin-field full"><label>Description courte — affichée sur la carte</label><textarea data-key="description" maxlength="240">${esc(project.description)}</textarea></div>
+          <div class="admin-field full"><label>Présentation détaillée — affichée à l'ouverture</label><textarea data-key="details" maxlength="3000">${esc(project.details || '')}</textarea></div>
+          <div class="admin-field"><label>Statut</label><select data-key="status">${['Bientôt fini','En développement','Terminé','En pause'].map(s => `<option value="${s}" ${project.status===s?'selected':''}>${s}</option>`).join('')}</select></div>
+          <div class="admin-field"><label>Ordre d'affichage</label><input data-key="sort_order" type="number" min="0" step="1" value="${Number(project.sort_order)||0}"></div>
+          <div class="admin-field full"><label class="admin-check"><input type="checkbox" data-key="visible" ${project.visible ? 'checked' : ''}> Publier ce projet sur le portfolio</label></div>
+          <div class="admin-field full links-editor"><label>Liens du projet</label><textarea data-links placeholder="Site officiel | https://exemple.fr\nGoogle Play | https://play.google.com/store/apps/details?id=...\nGitHub | https://github.com/...">${esc(linksToText(project.links))}</textarea><small class="admin-hint">Un lien par ligne, au format : Nom du bouton | https://adresse.fr. Les boutons apparaîtront dans la fiche du projet.</small></div>
+          <div class="admin-field full"><label>Captures d'écran du projet</label><p class="admin-hint">PNG, JPG ou WebP · 10 Mo maximum par image. Les images sont affichées sans recadrage pour conserver leur format d'origine.</p><input data-screenshots type="file" accept="image/png,image/jpeg,image/webp" multiple><div class="screenshot-previews">${allShots.map(shot => `<div class="screenshot-thumb ${shot.pending?'is-pending':''}"><img src="${esc(shot.url)}" alt="Aperçu de capture" loading="lazy"><button type="button" data-remove-shot="${shot.index}" data-pending="${shot.pending}" aria-label="Retirer cette capture">×</button>${shot.pending?'<small>À envoyer</small>':''}</div>`).join('')}</div><small class="admin-hint">${shots.length} capture(s) enregistrée(s)${previews.length ? ` · ${previews.length} nouvelle(s) en attente` : ''}</small></div>
+        </div>
+      </details>
+      <div class="admin-project-actions"><button class="admin-button danger" data-action="delete" type="button">Supprimer le projet</button></div>`;
+    root.appendChild(card);
+  });
+}
+function collect() {
+  document.querySelectorAll('.admin-project').forEach(card => {
+    const project = projects[Number(card.dataset.index)]; if (!project) return;
+    card.querySelectorAll('[data-key]').forEach(input => {
+      project[input.dataset.key] = input.type === 'checkbox' ? input.checked : input.dataset.key === 'sort_order' ? Number(input.value)||0 : input.value;
+    });
+    project._linksText = card.querySelector('[data-links]')?.value || '';
+  });
+}
+function safeId() { return `projet-${crypto.randomUUID().slice(0,8)}`; }
+function ext(file) { return ({'image/jpeg':'jpg','image/png':'png','image/webp':'webp'})[file.type]; }
+async function uploadImage(file, path) {
+  if (!file || !ext(file)) throw new Error('Format non accepté. Utilise PNG, JPG ou WebP.');
+  if (file.size > 10*1024*1024) throw new Error(`${file.name} dépasse la limite de 10 Mo.`);
+  const fullPath = `${path}/${crypto.randomUUID()}.${ext(file)}`;
+  const { error } = await supabase.storage.from(BUCKET).upload(fullPath, file, { cacheControl:'3600', upsert:false, contentType:file.type });
+  if (error) throw error;
+  return supabase.storage.from(BUCKET).getPublicUrl(fullPath).data.publicUrl;
+}
+function setSaving(value) {
+  saving = value;
+  document.querySelector('#save-all').disabled = value;
+  document.querySelector('#add-project').disabled = value;
+  document.querySelector('#save-all').textContent = value ? 'Enregistrement…' : 'Enregistrer et publier';
+}
+document.querySelector('#login-form').addEventListener('submit', async event => {
+  event.preventDefault(); const form = event.currentTarget;
+  setMessage(loginFeedback, 'Connexion en cours…');
+  const { data, error } = await supabase.auth.signInWithPassword({ email:form.elements.email.value.trim(), password:form.elements.password.value });
+  if (error) { setMessage(loginFeedback, `Connexion impossible : ${error.message}`, true); return; }
+  if (data.user.id !== ADMIN_ID) { await supabase.auth.signOut(); setMessage(loginFeedback, 'Ce compte ne possède pas les droits administrateur.', true); return; }
+  form.reset(); setMessage(loginFeedback, ''); showSession(data.user); await Promise.all([loadProjects(),loadSettings()]);
+});
+document.querySelector('#logout-button').addEventListener('click', async () => { await supabase.auth.signOut(); projects=[]; pendingScreenshots.clear(); pendingPreviews.clear(); showLogin(); setMessage(loginFeedback,'Vous êtes déconnecté.'); });
+supabase.auth.onAuthStateChange((_event, session) => { if (!session) showLogin(); });
+document.querySelector('#project-list').addEventListener('change', event => {
+  if (!event.target.matches('[data-screenshots]')) return;
+  collect();
+  const card = event.target.closest('.admin-project'), project = projects[Number(card.dataset.index)]; if (!project) return;
+  const files = Array.from(event.target.files || []);
+  const invalid = files.find(file => !ext(file) || file.size > 10*1024*1024);
+  if (invalid) { setMessage(feedback, `${invalid.name} : format invalide ou fichier supérieur à 10 Mo.`, true); event.target.value=''; return; }
+  const existing = pendingScreenshots.get(project.id) || [];
+  const next = [...existing, ...files]; pendingScreenshots.set(project.id, next);
+  const urls = next.map(file => URL.createObjectURL(file));
+  (pendingPreviews.get(project.id)||[]).forEach(URL.revokeObjectURL);
+  pendingPreviews.set(project.id, urls);
+  render();
+});
+document.querySelector('#project-list').addEventListener('click', async event => {
+  const remove = event.target.closest('[data-remove-shot]');
+  if (remove) {
+    const card = remove.closest('.admin-project'), project = projects[Number(card.dataset.index)];
+    if (remove.dataset.pending === 'true') {
+      const idx = Number(remove.dataset.removeShot), files = pendingScreenshots.get(project.id)||[];
+      files.splice(idx,1); pendingScreenshots.set(project.id,files);
+      const urls = pendingPreviews.get(project.id)||[]; if(urls[idx]) URL.revokeObjectURL(urls[idx]);
+      pendingPreviews.set(project.id,files.map(file=>URL.createObjectURL(file)));
+    } else {
+      const shots = getShots(project); shots.splice(Number(remove.dataset.removeShot),1); project.screenshots=shots; project.image=shots[0]||'';
+    }
+    render(); return;
+  }
+  const button = event.target.closest('[data-action="delete"]'); if (!button) return;
+  const card = button.closest('.admin-project'), project = projects[Number(card.dataset.index)];
+  if (!project || !confirm(`Supprimer « ${project.name} » du portfolio ?`)) return;
+  const { error } = await supabase.from('projects').delete().eq('id',project.id);
+  if (error) { setMessage(feedback,`Suppression impossible : ${error.message}`,true); return; }
+  pendingScreenshots.delete(project.id); (pendingPreviews.get(project.id)||[]).forEach(URL.revokeObjectURL); pendingPreviews.delete(project.id);
+  await loadProjects(); setMessage(feedback,'Projet supprimé.');
+});
+document.querySelector('#add-project').addEventListener('click', () => {
+  if (saving) return; collect();
+  const project = {id:safeId(),name:'Nouveau projet',type:'PROJET DIGITAL',description:'Présente ce projet en quelques mots.',details:'Ajoute ici la présentation détaillée.',status:'En développement',visible:true,image:'',screenshots:[],links:[],sort_order:projects.length+1};
+  projects.push(project); render();
+  const last = document.querySelector('#project-list').lastElementChild; last.scrollIntoView({behavior:'smooth',block:'center'}); last.querySelector('[data-key="name"]')?.focus();
+});
+document.querySelector('#save-all').addEventListener('click', async () => {
+  if (saving) return; collect(); setSaving(true); setMessage(feedback,'Vérification des champs…');
+  try {
+    for (const project of projects) project.links = parseLinks(project._linksText ?? linksToText(project.links));
+    const uploads = projects.map(async project => {
+      const files = pendingScreenshots.get(project.id)||[];
+      if (!files.length) return;
+      const shots = getShots(project).slice();
+      for (const file of files) shots.push(await uploadImage(file,`projects/${project.id}`));
+      project.screenshots=shots; project.image=shots[0]||'';
+    });
+    setMessage(feedback,'Envoi des images vers Supabase Storage…'); await Promise.all(uploads);
+    const rows = projects.map((project,index)=>({id:String(project.id),name:String(project.name||''),type:String(project.type||''),description:String(project.description||''),details:String(project.details||''),status:String(project.status||'En développement'),visible:Boolean(project.visible),image:String(project.image||''),screenshots:getShots(project),links:normalizeLinks(project.links),sort_order:Number(project.sort_order??index)}));
+    const {error} = await supabase.from('projects').upsert(rows,{onConflict:'id'}); if(error) throw error;
+    pendingScreenshots.clear(); pendingPreviews.forEach(urls=>urls.forEach(URL.revokeObjectURL)); pendingPreviews.clear();
+    await loadProjects(); setMessage(feedback,'Tout est enregistré et publié ! Les liens et captures sont visibles sur le site.');
+  } catch(error) { setMessage(feedback,`Enregistrement impossible : ${error.message}`,true); }
+  finally { setSaving(false); }
+});
+async function saveStudioImage(kind) {
+  const input=document.querySelector(kind==='profile'?'#profile-upload':'#banner-upload'),file=input.files?.[0];
+  if(!file){setMessage(identityFeedback,'Choisis une image avant de continuer.',true);return;}
+  setMessage(identityFeedback,'Envoi de l’image vers Supabase Storage…');
+  try { const url=await uploadImage(file,`studio/${kind}`);const next={...settings,[kind==='profile'?'profile_image':'banner_image']:url};const {error}=await supabase.from('site_settings').upsert({id:'main',...next},{onConflict:'id'});if(error)throw error;settings=next;await loadSettings();input.value='';setMessage(identityFeedback,'Image enregistrée et publiée.'); }
+  catch(error){setMessage(identityFeedback,`Envoi impossible : ${error.message}`,true);}
+}
 document.querySelector('#upload-profile').addEventListener('click',()=>saveStudioImage('profile'));
 document.querySelector('#upload-banner').addEventListener('click',()=>saveStudioImage('banner'));
-document.querySelector('#profile-upload').addEventListener('change',e=>{const f=e.target.files?.[0];if(f)document.querySelector('#profile-preview').src=URL.createObjectURL(f);});
-document.querySelector('#banner-upload').addEventListener('change',e=>{const f=e.target.files?.[0];if(f){const img=document.querySelector('#banner-preview');img.src=URL.createObjectURL(f);img.hidden=false;}});
+document.querySelector('#profile-upload').addEventListener('change',event=>{const file=event.target.files?.[0];if(file)document.querySelector('#profile-preview').src=URL.createObjectURL(file);});
+document.querySelector('#banner-upload').addEventListener('change',event=>{const file=event.target.files?.[0];if(file){const image=document.querySelector('#banner-preview');image.src=URL.createObjectURL(file);image.hidden=false;}});
+async function checkSession(){const {data:{session}}=await supabase.auth.getSession();if(session?.user?.id===ADMIN_ID){showSession(session.user);await Promise.all([loadProjects(),loadSettings()]);}else{if(session)await supabase.auth.signOut();showLogin();}}
 await checkSession();

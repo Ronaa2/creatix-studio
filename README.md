@@ -35,3 +35,25 @@
 Après le SQL initial `supabase-setup.sql`, exécuter une seule fois `supabase-media-setup.sql` dans Supabase SQL Editor. Ce script crée le bucket public `portfolio-media`, la table `site_settings`, ajoute `screenshots` aux projets et applique les politiques RLS/Storage. Les fichiers sont stockés dans Supabase Storage et leurs URL publiques sont enregistrées dans les tables. Les visiteurs peuvent lire les images ; seul l'UID administrateur configuré peut téléverser, remplacer ou supprimer des objets.
 
 Limite d'envoi : 10 Mo par image, formats JPEG, PNG et WebP.
+
+
+## V8 — liens de projets et administration améliorée
+
+1. Dans Supabase → SQL Editor, exécuter `supabase-links-migration.sql` (migration additive, sans effacer les projets).
+2. Remplacer les fichiers du dépôt GitHub par le contenu de ce dossier.
+3. Dans `/admin.html`, chaque projet dispose maintenant d'un éditeur repliable, d'aperçus d'images non recadrés et d'un champ liens.
+4. Pour les liens, saisir une ligne par bouton au format `Nom | https://adresse.fr`.
+5. Enregistrer et publier. Les boutons sont rendus dans la fenêtre de détails du projet.
+
+Les captures sont affichées en `object-fit: contain` pour préserver leur ratio et éviter les zooms/cadrages observés précédemment. La migration SQL doit être exécutée avant d'utiliser le nouveau champ de liens.
+
+
+## V8 — liens de projets et administration améliorée
+
+1. Dans Supabase → SQL Editor, exécuter `supabase-links-migration.sql` (migration additive, sans effacer les projets).
+2. Remplacer les fichiers du dépôt GitHub par le contenu de ce dossier.
+3. Dans `/admin.html`, chaque projet dispose maintenant d'un éditeur repliable, d'aperçus d'images non recadrés et d'un champ liens.
+4. Pour les liens, saisir une ligne par bouton au format `Nom | https://adresse.fr`.
+5. Enregistrer et publier. Les boutons sont rendus dans la fenêtre de détails du projet.
+
+Les captures sont affichées en `object-fit: contain` pour préserver leur ratio et éviter les zooms/cadrages observés précédemment. La migration SQL doit être exécutée avant d'utiliser le nouveau champ de liens.

@@ -123,3 +123,37 @@ body.modal-open{overflow:hidden}.footer-links{flex-wrap:wrap}.footer-links>a:not
 @media(max-width:640px){.section-wrap{width:calc(100% - 36px)}.site-header{padding-inline:18px}.main-nav{right:18px;left:18px}.hero{min-height:auto;padding-top:64px;padding-bottom:56px;grid-template-columns:1fr}.hero-copy h1{font-size:clamp(42px,12vw,64px);letter-spacing:-2.8px}.hero-lead{font-size:14px}.hero-art{max-width:300px;margin:12px auto 0}.hero-index{display:none}.section{padding-top:72px;padding-bottom:72px}.section-heading{display:grid;grid-template-columns:1fr;gap:14px}.section-heading h2{font-size:clamp(34px,9vw,48px)}.expertise-grid,.projects-grid{grid-template-columns:1fr;gap:16px}.project-card,.project-large{grid-column:auto}.project-visual{min-height:220px}.project-info{padding:20px}.studio-section{grid-template-columns:1fr;gap:30px}.studio-symbol{width:min(100%,270px);margin:auto}.contact-inner{grid-template-columns:1fr}.contact-form{padding:20px}.footer-main{display:grid;grid-template-columns:1fr;gap:15px}.footer-links{justify-content:flex-start;gap:14px}.footer-bottom{gap:10px;flex-direction:column;align-items:flex-start}.project-modal{padding:8px}.project-modal-panel{max-height:95dvh}.modal-visual{margin:0 10px;max-height:40vh}.modal-visual img{max-height:36vh;flex-basis:100%}.modal-content{padding:20px}.admin-header{height:auto;min-height:68px;flex-wrap:wrap;padding:12px 16px}.admin-back{margin-left:auto}.admin-main{width:calc(100% - 28px);margin:34px auto 60px}.admin-intro h1{font-size:clamp(42px,12vw,60px)}.admin-identity{padding:16px}.identity-grid{grid-template-columns:1fr}.identity-card{width:100%}.admin-toolbar{flex-direction:column;align-items:stretch}.admin-toolbar .admin-button{width:100%}.admin-project{padding:16px}.admin-project-head{align-items:flex-start;gap:8px;flex-direction:column}.admin-session{align-items:flex-start;flex-direction:column}.admin-session .admin-button{width:100%}.admin-project-actions .admin-button{width:100%}}
 @media(min-width:641px) and (max-width:900px){.hero{grid-template-columns:1fr .8fr}.studio-section{gap:35px}.contact-inner{grid-template-columns:1fr 1fr}}
 @media(prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;filter:none;transition:none}}
+
+/* V8 — captures lisibles, sans recadrage ni agrandissement excessif */
+.project-visual{display:grid;place-items:center;isolation:isolate;background:#111421;min-height:260px;}
+.project-screenshot{position:relative;inset:auto;display:block;width:100%;height:100%;max-height:420px;object-fit:contain;object-position:center;background:transparent;padding:10px;z-index:4;}
+.project-screenshot[hidden]{display:none!important}
+.project-visual:has(.project-screenshot:not([hidden])) .mock-window,
+.project-visual:has(.project-screenshot:not([hidden])) .wheel,
+.project-visual:has(.project-screenshot:not([hidden])) .home-ui,
+.project-visual:has(.project-screenshot:not([hidden])) .water-phone{display:none!important}
+.project-visual:has(.project-screenshot:not([hidden])) .visual-label{z-index:5}
+.modal-visual{height:auto;max-height:65vh;min-height:0;padding:12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));align-items:start;gap:14px;overflow-y:auto;}
+.modal-shot{margin:0;min-width:0;display:grid;place-items:center;min-height:120px;max-height:60vh;border:1px solid #ffffff18;border-radius:14px;background:#090b13;overflow:hidden;}
+.modal-shot img{display:block;width:100%;height:auto;max-height:58vh;object-fit:contain;border-radius:12px;}
+.modal-links{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px;}
+.project-link-button{display:inline-flex;align-items:center;gap:8px;padding:11px 15px;border-radius:999px;border:1px solid #9b7bff55;background:linear-gradient(120deg,#8b6cff22,#5a8cff18);color:#d9d0ff;font-size:12px;font-weight:700;transition:transform .2s,border-color .2s,background .2s;}
+.project-link-button:hover{transform:translateY(-2px);border-color:#a995ff;background:#8b6cff35;}
+@media(max-width:640px){.project-visual{min-height:220px}.project-screenshot{max-height:300px;padding:8px}.modal-visual{grid-template-columns:1fr;max-height:52vh}.modal-shot img{max-height:48vh}.modal-links{gap:8px}.project-link-button{font-size:11px;padding:10px 13px}}
+
+/* V8 — captures lisibles, sans recadrage ni agrandissement excessif */
+.project-visual{display:grid;place-items:center;isolation:isolate;background:#111421;min-height:260px;}
+.project-screenshot{position:relative;inset:auto;display:block;width:100%;height:100%;max-height:420px;object-fit:contain;object-position:center;background:transparent;padding:10px;z-index:4;}
+.project-screenshot[hidden]{display:none!important}
+.project-visual:has(.project-screenshot:not([hidden])) .mock-window,
+.project-visual:has(.project-screenshot:not([hidden])) .wheel,
+.project-visual:has(.project-screenshot:not([hidden])) .home-ui,
+.project-visual:has(.project-screenshot:not([hidden])) .water-phone{display:none!important}
+.project-visual:has(.project-screenshot:not([hidden])) .visual-label{z-index:5}
+.modal-visual{height:auto;max-height:65vh;min-height:0;padding:12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));align-items:start;gap:14px;overflow-y:auto;}
+.modal-shot{margin:0;min-width:0;display:grid;place-items:center;min-height:120px;max-height:60vh;border:1px solid #ffffff18;border-radius:14px;background:#090b13;overflow:hidden;}
+.modal-shot img{display:block;width:100%;height:auto;max-height:58vh;object-fit:contain;border-radius:12px;}
+.modal-links{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px;}
+.project-link-button{display:inline-flex;align-items:center;gap:8px;padding:11px 15px;border-radius:999px;border:1px solid #9b7bff55;background:linear-gradient(120deg,#8b6cff22,#5a8cff18);color:#d9d0ff;font-size:12px;font-weight:700;transition:transform .2s,border-color .2s,background .2s;}
+.project-link-button:hover{transform:translateY(-2px);border-color:#a995ff;background:#8b6cff35;}
+@media(max-width:640px){.project-visual{min-height:220px}.project-screenshot{max-height:300px;padding:8px}.modal-visual{grid-template-columns:1fr;max-height:52vh}.modal-shot img{max-height:48vh}.modal-links{gap:8px}.project-link-button{font-size:11px;padding:10px 13px}}

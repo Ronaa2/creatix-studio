@@ -7,3 +7,37 @@
 .admin-section-heading h2{font:700 22px Manrope;margin:0 0 6px}.admin-section-heading p,.admin-hint{font-size:11px;color:#9298ad;line-height:1.6;margin:0 0 18px}
 .identity-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.identity-card{min-width:0;padding:18px;border:1px solid #ffffff16;border-radius:17px;background:#0b0d16;display:flex;flex-direction:column;align-items:flex-start;gap:12px}.identity-card h3{font:700 14px Manrope;margin:0}.identity-card input[type=file],.admin-field input[type=file]{max-width:100%;color:#aeb2c4;font:11px 'DM Sans'}.identity-preview{display:block;max-width:100%;object-fit:cover;border:1px solid #ffffff20;background:#161827}.avatar-preview{width:112px;height:112px;border-radius:50%}.banner-preview{width:100%;height:130px;border-radius:13px;object-position:center}.screenshot-previews{display:flex;flex-wrap:wrap;gap:10px;margin-top:5px}.screenshot-thumb{position:relative;width:112px;height:82px;border-radius:10px;overflow:hidden;border:1px solid #ffffff25;background:#171a29}.screenshot-thumb img{width:100%;height:100%;object-fit:cover}.screenshot-thumb button{position:absolute;right:5px;top:5px;width:24px;height:24px;border:0;border-radius:50%;background:#090a13dd;color:#fff;font-size:18px;cursor:pointer}
 @media(max-width:640px){.admin-header{height:auto;min-height:68px;flex-wrap:wrap;padding:12px 16px}.admin-back{margin-left:auto}.admin-main{width:calc(100% - 28px);margin:34px auto 60px}.admin-intro h1{font-size:clamp(42px,12vw,60px)}.admin-identity{padding:16px}.identity-grid{grid-template-columns:1fr}.identity-card{width:100%}.admin-toolbar{flex-direction:column;align-items:stretch}.admin-toolbar .admin-button{width:100%}.admin-project{padding:16px}.admin-project-head{align-items:flex-start;gap:8px;flex-direction:column}.admin-fields{grid-template-columns:1fr}.admin-field.full{grid-column:auto}.admin-session{align-items:flex-start;flex-direction:column}.admin-session .admin-button{width:100%}.admin-project-actions .admin-button{width:100%}}
+
+/* V8 — administration plus lisible et confortable */
+.admin-project{padding:clamp(16px,2.5vw,26px)}
+.admin-project-head>div{display:grid;gap:5px}.admin-project-subtitle{font-size:10px;color:#a99aff}
+.project-editor{margin-top:8px;border-top:1px solid #ffffff12;padding-top:14px}
+.project-editor>summary{cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:14px;color:#e7e5f4;font:700 13px Manrope;padding:8px 0 14px}
+.project-editor>summary::-webkit-details-marker{display:none}.project-editor>summary:after{content:'⌄';color:#a99aff;font-size:20px}.project-editor[open]>summary:after{content:'⌃'}
+.project-editor>summary span{font:400 10px 'DM Sans';color:#858ba0;margin-left:auto}
+.admin-field textarea[data-links]{min-height:105px;font-family:ui-monospace,monospace;font-size:12px;line-height:1.65}
+.admin-hint{display:block;margin:0;color:#8f95aa}
+.screenshot-previews{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:12px;margin-top:8px}
+.screenshot-thumb{position:relative;width:100%;height:135px;border-radius:12px;overflow:hidden;border:1px solid #ffffff25;background:#080a12;display:grid;place-items:center}
+.screenshot-thumb img{width:100%;height:100%;object-fit:contain;padding:5px}
+.screenshot-thumb.is-pending{border-style:dashed;border-color:#a18bff}
+.screenshot-thumb>small{position:absolute;left:7px;bottom:7px;padding:4px 6px;border-radius:6px;background:#7559d9;color:white;font-size:9px}
+.admin-button:disabled{opacity:.55;cursor:wait}
+@media(max-width:640px){.project-editor>summary{align-items:flex-start;flex-wrap:wrap}.project-editor>summary span{width:100%;margin:0}.screenshot-previews{grid-template-columns:repeat(2,minmax(0,1fr))}.screenshot-thumb{height:120px}}
+
+/* V8 — administration plus lisible et confortable */
+.admin-project{padding:clamp(16px,2.5vw,26px)}
+.admin-project-head>div{display:grid;gap:5px}.admin-project-subtitle{font-size:10px;color:#a99aff}
+.project-editor{margin-top:8px;border-top:1px solid #ffffff12;padding-top:14px}
+.project-editor>summary{cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:14px;color:#e7e5f4;font:700 13px Manrope;padding:8px 0 14px}
+.project-editor>summary::-webkit-details-marker{display:none}.project-editor>summary:after{content:'⌄';color:#a99aff;font-size:20px}.project-editor[open]>summary:after{content:'⌃'}
+.project-editor>summary span{font:400 10px 'DM Sans';color:#858ba0;margin-left:auto}
+.admin-field textarea[data-links]{min-height:105px;font-family:ui-monospace,monospace;font-size:12px;line-height:1.65}
+.admin-hint{display:block;margin:0;color:#8f95aa}
+.screenshot-previews{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:12px;margin-top:8px}
+.screenshot-thumb{position:relative;width:100%;height:135px;border-radius:12px;overflow:hidden;border:1px solid #ffffff25;background:#080a12;display:grid;place-items:center}
+.screenshot-thumb img{width:100%;height:100%;object-fit:contain;padding:5px}
+.screenshot-thumb.is-pending{border-style:dashed;border-color:#a18bff}
+.screenshot-thumb>small{position:absolute;left:7px;bottom:7px;padding:4px 6px;border-radius:6px;background:#7559d9;color:white;font-size:9px}
+.admin-button:disabled{opacity:.55;cursor:wait}
+@media(max-width:640px){.project-editor>summary{align-items:flex-start;flex-wrap:wrap}.project-editor>summary span{width:100%;margin:0}.screenshot-previews{grid-template-columns:repeat(2,minmax(0,1fr))}.screenshot-thumb{height:120px}}
