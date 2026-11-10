@@ -5,7 +5,7 @@
 <meta name="theme-color" content="#080910"><title>Administration — Creatix Studio</title><link rel="icon" type="image/png" sizes="128x128" href="assets/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="admin.css">
+<link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="admin.css"><link rel="stylesheet" href="refine.css?v=12">
 </head>
 <body class="admin-body">
 <header class="admin-header"><a class="admin-brand" href="index.html"><img src="assets/logo-creatix.png" alt=""><span>CREATIX <i>STUDIO</i></span></a><div><span class="admin-indicator"></span> ESPACE ADMINISTRATEUR</div><a href="index.html" class="admin-back">Voir le site ↗</a></header>
@@ -15,7 +15,15 @@
   <section id="admin-workspace" hidden>
     <div class="admin-session"><span id="admin-session-email"></span><button class="admin-button" id="logout-button" type="button">Se déconnecter</button></div>
     <div class="admin-warning"><strong>Administration en ligne :</strong> les modifications sont enregistrées dans Supabase et deviennent visibles par tous les visiteurs. Les autorisations sont également vérifiées par la base de données.</div>
-    <section class="admin-identity"><div class="admin-section-heading"><h2>Identité du studio</h2><p>Photo de profil et bannière partagées sur tous les appareils via Supabase Storage.</p></div><div class="identity-grid"><div class="identity-card"><h3>Photo de profil / logo</h3><img id="profile-preview" class="identity-preview avatar-preview" src="assets/logo-creatix.png" alt="Aperçu du profil"><input id="profile-upload" type="file" accept="image/png,image/jpeg,image/webp"><button class="admin-button" id="upload-profile" type="button">Enregistrer la photo</button></div><div class="identity-card"><h3>Bannière du studio</h3><img id="banner-preview" class="identity-preview banner-preview" alt="Aperçu de la bannière" hidden><input id="banner-upload" type="file" accept="image/png,image/jpeg,image/webp"><button class="admin-button" id="upload-banner" type="button">Enregistrer la bannière</button></div></div><p class="admin-feedback" id="identity-feedback" role="status"></p></section>
+    <details class="admin-guide" open><summary>Dimensions idéales des images</summary><table>
+      <tr><th>Logo d'un projet</th><td><b>512 × 512 px</b> · carré · PNG ou WebP (fond transparent possible)</td></tr>
+      <tr><th>Captures (téléphone)</th><td><b>1080 × 2340 px</b> · portrait 9:19,5 · captures d'écran brutes, sans bordure</td></tr>
+      <tr><th>Captures (paysage / web)</th><td><b>1920 × 1080 px</b> · 16:9</td></tr>
+      <tr><th>Visuel d'accueil</th><td>C'est la <b>1re capture</b> des 3 premiers projets publiés (selon l'ordre d'affichage), en portrait 1080 × 2340 px</td></tr>
+      <tr><th>Photo de profil du studio</th><td><b>512 × 512 px</b> · carré</td></tr>
+      <tr><th>Bannière du studio</th><td><b>1920 × 600 px</b> · sujet au centre</td></tr>
+      <tr><th>Limites</th><td>PNG, JPG ou WebP · 10 Mo maximum par image</td></tr></table></details>
+    <section class="admin-identity"><div class="admin-section-heading"><h2>Identité du studio</h2><p>Photo de profil et bannière partagées sur tous les appareils via Supabase Storage.</p></div><div class="identity-grid"><div class="identity-card"><h3>Photo de profil / logo</h3><small class="admin-hint">Idéal : 512 × 512 px, carré.</small><img id="profile-preview" class="identity-preview avatar-preview" src="assets/logo-creatix.png" alt="Aperçu du profil"><input id="profile-upload" type="file" accept="image/png,image/jpeg,image/webp"><button class="admin-button" id="upload-profile" type="button">Enregistrer la photo</button></div><div class="identity-card"><h3>Bannière du studio</h3><small class="admin-hint">Idéal : 1920 × 600 px, sujet au centre.</small><img id="banner-preview" class="identity-preview banner-preview" alt="Aperçu de la bannière" hidden><input id="banner-upload" type="file" accept="image/png,image/jpeg,image/webp"><button class="admin-button" id="upload-banner" type="button">Enregistrer la bannière</button></div></div><p class="admin-feedback" id="identity-feedback" role="status"></p></section>
     <section class="admin-toolbar"><div><h2>Projets</h2><p id="project-count">Chargement…</p></div><button class="admin-button primary" id="add-project" type="button">＋ Ajouter un projet</button></section>
     <div id="project-list" class="admin-list"></div>
     <div class="admin-actions"><button class="admin-button primary" id="save-all" type="button">Enregistrer et publier</button></div>

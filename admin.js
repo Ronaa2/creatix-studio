@@ -11,6 +11,7 @@ const feedback = document.querySelector('#feedback');
 const identityFeedback = document.querySelector('#identity-feedback');
 let projects = [];
 let settings = { profile_image: '', banner_image: '' };
+const pendingLogos = new Map();
 const pendingScreenshots = new Map();
 const pendingPreviews = new Map();
 let saving = false;
@@ -77,12 +78,13 @@ function render() {
           <div class="admin-field"><label>Statut</label><select data-key="status">${['Bientôt fini','En développement','Terminé','En pause'].map(s => `<option value="${s}" ${project.status===s?'selected':''}>${s}</option>`).join('')}</select></div>
           <div class="admin-field"><label>Ordre d'affichage</label><input data-key="sort_order" type="number" min="0" step="1" value="${Number(project.sort_order)||0}"></div>
           <div class="admin-field full"><label class="admin-check"><input type="checkbox" data-key="visible" ${project.visible ? 'checked' : ''}> Publier ce projet sur le portfolio</label></div>
-          <div class="admin-field full links-editor"><label>Liens du projet</label><textarea data-links placeholder="Site officiel | https://exemple.fr\nGoogle Play | https://play.google.com/store/apps/details?id=...\nGitHub | https://github.com/...">${esc(linksToText(project.links))}</textarea><small class="admin-hint">Un lien par ligne, au format : Nom du bouton | https://adresse.fr. Les boutons apparaîtront dans la fiche du projet.</small></div>
-          <div class="admin-field full"><label>Captures d'écran du projet</label><p class="admin-hint">PNG, JPG ou WebP · 10 Mo maximum par image. Les images sont affichées sans recadrage pour conserver leur format d'origine.</p><input data-screenshots type="file" accept="image/png,image/jpeg,image/webp" multiple><div class="screenshot-previews">${allShots.map(shot => `<div class="screenshot-thumb ${shot.pending?'is-pending':''}"><img src="${esc(shot.url)}" alt="Aperçu de capture" loading="lazy"><button type="button" data-remove-shot="${shot.index}" data-pending="${shot.pending}" aria-label="Retirer cette capture">×</button>${shot.pending?'<small>À envoyer</small>':''}</div>`).join('')}</div><small class="admin-hint">${shots.length} capture(s) enregistrée(s)${previews.length ? ` · ${previews.length} nouvelle(s) en attente` : ''}</small></div>
+          <div class="admin-field full links-editor"><label>Liens du projet</label><textarea data-links placeholder="Site officiel | https://exemple.fr\nGoogle Play | https://play.google.com/store/apps/details?id=...\nGitHub | https://github.com/...">${esc(linksToText(project.links))}</textarea><small class="admin-hint">Un lien par ligne, au format : Nom du bouton | https://adresse.fr. Les boutons apparaîtront sur la page du projet.</small><div class="link-chips">${['Google Play','App Store','Site officiel','GitHub'].map(n => `<button type="button" class="chip" data-chip="${n}">+ ${n}</button>`).join('')}</div></div>
+          <div class="admin-field full logo-field"><label>Logo du projet</label><div class="logo-row"><img class="logo-preview" src="${esc(project.logo || 'assets/favicon.png')}" alt="Logo du projet"><input data-logo type="file" accept="image/png,image/jpeg,image/webp"></div><small class="admin-hint">Idéal : 512 × 512 px, carré (PNG ou WebP). Affiché sur la page du projet.</small></div>
+          <div class="admin-field full"><label>Captures d'écran du projet</label><p class="admin-hint">Idéal : portrait 1080 × 2340 px (9:19,5) pour un téléphone, ou 1920 × 1080 px en paysage. PNG, JPG ou WebP · 10 Mo max. La 1re capture sert de couverture de la carte et de visuel d'accueil (si ce projet est dans les 3 premiers publiés).</p><input data-screenshots type="file" accept="image/png,image/jpeg,image/webp" multiple><div class="screenshot-previews">${allShots.map(shot => `<div class="screenshot-thumb ${shot.pending?'is-pending':''}"><img src="${esc(shot.url)}" alt="Aperçu de capture" loading="lazy"><button type="button" data-remove-shot="${shot.index}" data-pending="${shot.pending}" aria-label="Retirer cette capture">×</button>${shot.pending?'<small>À envoyer</small>':''}</div>`).join('')}</div><small class="admin-hint">${shots.length} capture(s) enregistrée(s)${previews.length ? ` · ${previews.length} nouvelle(s) en attente` : ''}</small></div>
         </div>
       </details>
       <div class="admin-project-actions"><button class="admin-button danger" data-action="delete" type="button">Supprimer le projet</button></div>`;
-    root.appendChild(card);
+    root.appendChild(card); const lf = pendingLogos.get(project.id); if (lf) card.querySelector('.logo-preview').src = URL.createObjectURL(lf);
   });
 }
 function collect() {
@@ -158,7 +160,7 @@ document.querySelector('#project-list').addEventListener('click', async event =>
 });
 document.querySelector('#add-project').addEventListener('click', () => {
   if (saving) return; collect();
-  const project = {id:safeId(),name:'Nouveau projet',type:'PROJET DIGITAL',description:'Présente ce projet en quelques mots.',details:'Ajoute ici la présentation détaillée.',status:'En développement',visible:true,image:'',screenshots:[],links:[],sort_order:projects.length+1};
+  const project = {id:safeId(),name:'Nouveau projet',type:'PROJET DIGITAL',description:'Présente ce projet en quelques mots.',details:'Ajoute ici la présentation détaillée.',status:'En développement',visible:true,image:'',screenshots:[],links:[],logo:'',sort_order:projects.length+1};
   projects.push(project); render();
   const last = document.querySelector('#project-list').lastElementChild; last.scrollIntoView({behavior:'smooth',block:'center'}); last.querySelector('[data-key="name"]')?.focus();
 });
@@ -167,6 +169,7 @@ document.querySelector('#save-all').addEventListener('click', async () => {
   try {
     for (const project of projects) project.links = parseLinks(project._linksText ?? linksToText(project.links));
     const uploads = projects.map(async project => {
+      const lf = pendingLogos.get(project.id); if (lf) project.logo = await uploadImage(lf, `projects/${project.id}/logo`);
       const files = pendingScreenshots.get(project.id)||[];
       if (!files.length) return;
       const shots = getShots(project).slice();
@@ -174,9 +177,9 @@ document.querySelector('#save-all').addEventListener('click', async () => {
       project.screenshots=shots; project.image=shots[0]||'';
     });
     setMessage(feedback,'Envoi des images vers Supabase Storage…'); await Promise.all(uploads);
-    const rows = projects.map((project,index)=>({id:String(project.id),name:String(project.name||''),type:String(project.type||''),description:String(project.description||''),details:String(project.details||''),status:String(project.status||'En développement'),visible:Boolean(project.visible),image:String(project.image||''),screenshots:getShots(project),links:normalizeLinks(project.links),sort_order:Number(project.sort_order??index)}));
+    const rows = projects.map((project,index)=>({id:String(project.id),name:String(project.name||''),type:String(project.type||''),description:String(project.description||''),details:String(project.details||''),status:String(project.status||'En développement'),visible:Boolean(project.visible),image:String(project.image||''),screenshots:getShots(project),links:normalizeLinks(project.links),logo:String(project.logo||''),sort_order:Number(project.sort_order??index)}));
     const {error} = await supabase.from('projects').upsert(rows,{onConflict:'id'}); if(error) throw error;
-    pendingScreenshots.clear(); pendingPreviews.forEach(urls=>urls.forEach(URL.revokeObjectURL)); pendingPreviews.clear();
+    pendingScreenshots.clear(); pendingLogos.clear(); pendingPreviews.forEach(urls=>urls.forEach(URL.revokeObjectURL)); pendingPreviews.clear();
     await loadProjects(); setMessage(feedback,'Tout est enregistré et publié ! Les liens et captures sont visibles sur le site.');
   } catch(error) { setMessage(feedback,`Enregistrement impossible : ${error.message}`,true); }
   finally { setSaving(false); }
@@ -194,3 +197,17 @@ document.querySelector('#profile-upload').addEventListener('change',event=>{cons
 document.querySelector('#banner-upload').addEventListener('change',event=>{const file=event.target.files?.[0];if(file){const image=document.querySelector('#banner-preview');image.src=URL.createObjectURL(file);image.hidden=false;}});
 async function checkSession(){const {data:{session}}=await supabase.auth.getSession();if(session?.user?.id===ADMIN_ID){showSession(session.user);await Promise.all([loadProjects(),loadSettings()]);}else{if(session)await supabase.auth.signOut();showLogin();}}
 await checkSession();
+
+document.querySelector('#project-list').addEventListener('change', event => {
+  if (!event.target.matches('[data-logo]')) return;
+  const card = event.target.closest('.admin-project'), project = projects[Number(card.dataset.index)], file = event.target.files?.[0];
+  if (!project || !file) return;
+  if (!ext(file) || file.size > 10*1024*1024) { setMessage(feedback, `${file.name} : format invalide ou fichier supérieur à 10 Mo.`, true); event.target.value=''; return; }
+  pendingLogos.set(project.id, file);
+  card.querySelector('.logo-preview').src = URL.createObjectURL(file);
+});
+document.querySelector('#project-list').addEventListener('click', event => {
+  const chip = event.target.closest('[data-chip]'); if (!chip) return;
+  const area = chip.closest('.links-editor').querySelector('[data-links]');
+  area.value = (area.value.trim() ? area.value.trimEnd() + '\n' : '') + `${chip.dataset.chip} | https://`; area.focus();
+});

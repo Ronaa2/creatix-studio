@@ -42,3 +42,19 @@ function closeProject(){modal.classList.remove('open');modal.setAttribute('aria-
 const grid=document.querySelector('.projects-grid');grid?.addEventListener('click',e=>{const card=e.target.closest('.project-card');if(card&&!card.hidden)openProject(card);});grid?.querySelectorAll('.project-card').forEach(card=>{card.tabIndex=0;card.setAttribute('role','button');});grid?.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.classList.contains('project-card')){e.preventDefault();openProject(e.target);}});modal?.querySelectorAll('[data-close-modal]').forEach(el=>el.addEventListener('click',closeProject));document.addEventListener('keydown',e=>{if(e.key==='Escape'&&modal?.classList.contains('open'))closeProject();});
 // Formulaire e-mail : ouvre le logiciel de messagerie du visiteur.
 document.querySelector('#contact-form')?.addEventListener('submit',event=>{event.preventDefault();const form=event.currentTarget;if(!form.reportValidity())return;const name=form.elements.name.value.trim(),sender=form.elements.email.value.trim(),subject=form.elements.subject.value.trim(),message=form.elements.message.value.trim();const body=`Nom : ${name}\nE-mail : ${sender}\n\n${message}`;const url=`mailto:ronaapages@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;document.querySelector('#contact-form-note').textContent="Votre application de messagerie va s'ouvrir. Vérifiez le message puis envoyez-le.";window.location.href=url;});
+
+// v11 — les téléphones du hero affichent la 1re capture des 3 premiers projets publiés (ordre d'affichage de l'admin)
+(function heroPhones(){
+  const phones=[...document.querySelectorAll('.hero-art .device')];
+  const list=currentProjects.filter(p=>p.visible).slice(0,3);
+  const slot=[1,0,2]; // le téléphone central = 1er projet
+  phones.forEach((ph,i)=>{
+    const p=list[slot[i]];if(!p)return;
+    const screen=ph.querySelector('.screen'),shot=(Array.isArray(p.screenshots)&&p.screenshots[0])||p.image;
+    screen.querySelector('span').textContent=p.name;
+    if(!shot)return;
+    const img=new Image();img.alt='';img.decoding='async';
+    img.onload=()=>{screen.classList.add('has-shot');screen.prepend(img);};
+    img.src=shot;
+  });
+})();

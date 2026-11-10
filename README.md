@@ -1,4 +1,4 @@
-# Creatix Studio — version 6 (GitHub Pages + Supabase)
+# Creatix Studio — version 12 (GitHub Pages + Supabase)
 
 ## Fichiers
 - `index.html` : portfolio public.
@@ -47,13 +47,22 @@ Limite d'envoi : 10 Mo par image, formats JPEG, PNG et WebP.
 
 Les captures sont affichées en `object-fit: contain` pour préserver leur ratio et éviter les zooms/cadrages observés précédemment. La migration SQL doit être exécutée avant d'utiliser le nouveau champ de liens.
 
+## V9 — refonte du style
+- Nouveau fichier `refine.css` (chargé après `styles.css`) : typographie plus lisible, hero redessiné, grille de projets 2×2, icônes SVG, header collant, transitions fluides.
+- Nouveau fichier `enhance.js` : header au défilement, lien de navigation actif.
+- Correctif mobile : les halos de fond débordaient de l'écran et élargissaient la page ; ils sont maintenant fixes et l'overflow horizontal est bloqué. Menu mobile animé, champs en 16 px pour éviter le zoom iOS.
+- Aucune migration Supabase nécessaire. Déposer tous les fichiers à la racine du dépôt.
 
-## V8 — liens de projets et administration améliorée
+## V10 — pages projet, 3D et administration
+1. Supabase > SQL Editor : exécuter `supabase-v10-migration.sql` (ajoute la colonne `logo`, sans rien effacer). À faire avant d'enregistrer depuis l'admin.
+2. Remplacer les fichiers du dépôt par ceux de cette archive (nouveaux : `projet.html`, `projet.js`, `project.css`).
+3. Cliquer sur un projet ouvre `projet.html?id=...` : logo, statut et avancement, description, boutons de liens (Google Play, App Store, site officiel…), galerie 3D des captures avec agrandissement.
+4. Admin : logo par projet, boutons d'ajout rapide de liens, barre d'enregistrement toujours visible.
 
-1. Dans Supabase → SQL Editor, exécuter `supabase-links-migration.sql` (migration additive, sans effacer les projets).
-2. Remplacer les fichiers du dépôt GitHub par le contenu de ce dossier.
-3. Dans `/admin.html`, chaque projet dispose maintenant d'un éditeur repliable, d'aperçus d'images non recadrés et d'un champ liens.
-4. Pour les liens, saisir une ligne par bouton au format `Nom | https://adresse.fr`.
-5. Enregistrer et publier. Les boutons sont rendus dans la fenêtre de détails du projet.
+## V11 — 3D au défilement et visuels d'accueil
+- Les téléphones du hero reprennent la 1re capture des 3 premiers projets publiés : modifier ces captures dans l'admin met l'accueil à jour. Pas de migration SQL.
+- Animations 3D pendant le défilement (désactivées si l'appareil demande moins d'animations).
+- L'admin affiche un guide des dimensions idéales (logo 512×512, captures 1080×2340, bannière 1920×600).
 
-Les captures sont affichées en `object-fit: contain` pour préserver leur ratio et éviter les zooms/cadrages observés précédemment. La migration SQL doit être exécutée avant d'utiliser le nouveau champ de liens.
+## V12
+- Suppression des effets d'inclinaison (défilement, survol des cartes, hero, logo). Le carrousel de captures de la page projet garde sa profondeur 3D.
